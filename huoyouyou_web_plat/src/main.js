@@ -18,6 +18,8 @@ Vue.use(ElementUI)
 Vue.use(VueRouter)
 Vue.use(Vuex)
 
+
+
 //NProgress.configure({ showSpinner: false });
 
 //对axios进行统一配置
@@ -29,20 +31,21 @@ axios.defaults.baseURL = "http://127.0.0.1:9527/services"//配置前缀
 Vue.prototype.$http = axios //给Vue这个类添加一个原型的属性,这个类的对象都能调用
 Vue.config.productionTip = false
 const router = new VueRouter({
-  routes
-})
+    routes
+});
+Vue.prototype.$filePathImg = '';
 
 router.beforeEach((to, from, next) => {
-  //NProgress.start();
-  if (to.path == '/login') {
-    sessionStorage.removeItem('user');
-  }
-  let user = JSON.parse(sessionStorage.getItem('user'));
-  if (!user && to.path != '/login') {
-    next({ path: '/login' })
-  } else {
-    next()
-  }
+    //NProgress.start();
+    if (to.path == '/login') {
+        sessionStorage.removeItem('user');
+    }
+    let user = JSON.parse(sessionStorage.getItem('user'));
+    if (!user && to.path != '/login') {
+        next({path: '/login'})
+    } else {
+        next()
+    }
 })
 
 //router.afterEach(transition => {
@@ -50,11 +53,11 @@ router.beforeEach((to, from, next) => {
 //});
 
 new Vue({
-  //el: '#app',
-  //template: '<App/>',
-  router,
-  store,
-  //components: { App }
-  render: h => h(App)
+    //el: '#app',
+    //template: '<App/>',
+    router,
+    store,
+    //components: { App }
+    render: h => h(App)
 }).$mount('#app')
 

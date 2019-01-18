@@ -1,309 +1,327 @@
 <template>
-	<section>
-		<!--工具条-->
-		<el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
-			<el-form :inline="true" :model="filters">
-				<el-form-item>
-					<el-input v-model="filters.keyword" placeholder="关键字"></el-input>
-				</el-form-item>
-				<el-form-item>
-					<el-button type="primary" v-on:click="getBrands">查询</el-button>
-				</el-form-item>
-				<el-form-item>
-					<el-button type="primary" @click="handleAdd">新增</el-button>
-				</el-form-item>
-			</el-form>
-		</el-col>
+    <section>
+        <!--工具条-->
+        <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
+            <el-form :inline="true" :model="filters">
+                <el-form-item>
+                    <el-input v-model="filters.keyword" placeholder="关键字"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" v-on:click="getBrands">查询</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="handleAdd">新增</el-button>
+                </el-form-item>
+            </el-form>
+        </el-col>
 
-		<!--列表-->
-		<el-table :data="brands" highlight-current-row v-loading="listLoading" @selection-change="selsChange" style="width: 100%;">
-			<el-table-column type="selection" width="55">
-			</el-table-column>
-			<el-table-column type="index" width="60">
-			</el-table-column>
-			<el-table-column prop="name" label="名称" width="180" sortable>
-			</el-table-column>
-			<el-table-column prop="englishName" label="英文名" width="200" sortable>
-			</el-table-column>
-			<!--有点屌-->
-			<el-table-column prop="productType.name" label="商品类型" width="180" sortable>
-			</el-table-column>
-			<el-table-column prop="description" label="描述"  min-width="250" sortable>
-			</el-table-column>
-			<el-table-column label="操作" width="150">
-				<template scope="scope">
-					<el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-					<el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
-				</template>
-			</el-table-column>
-		</el-table>
+        <!--列表-->
+        <el-table :data="brands" highlight-current-row v-loading="listLoading" @selection-change="selsChange"
+                  style="width: 100%;">
+            <el-table-column type="selection" width="55">
+            </el-table-column>
+            <el-table-column type="index" width="60">
+            </el-table-column>
+            <el-table-column prop="name" label="名称" width="180" sortable>
+            </el-table-column>
+            <el-table-column prop="englishName" label="英文名" width="200" sortable>
+            </el-table-column>
+            <!--有点屌-->
+            <el-table-column prop="productType.name" label="商品类型" width="180" sortable>
+            </el-table-column>
+            <el-table-column prop="description" label="描述" min-width="250" sortable>
+            </el-table-column>
+            <el-table-column label="操作" width="150">
+                <template scope="scope">
+                    <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
 
-		<!--工具条-->
-		<el-col :span="24" class="toolbar">
-			<el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
-			<el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="20" :total="total" style="float:right;">
-			</el-pagination>
-		</el-col>
+        <!--工具条-->
+        <el-col :span="24" class="toolbar">
+            <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
+            <el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :page-size="10"
+                           :total="total" style="float:right;">
+            </el-pagination>
+        </el-col>
 
-		<!--编辑界面-->
-		<el-dialog title="编辑" v-model="editFormVisible" :close-on-click-modal="false">
-			<el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
-				<el-form-item label="姓名" prop="name">
-					<el-input v-model="editForm.name" auto-complete="off"></el-input>
-				</el-form-item>
-				<el-form-item label="性别">
-					<el-radio-group v-model="editForm.sex">
-						<el-radio class="radio" :label="1">男</el-radio>
-						<el-radio class="radio" :label="0">女</el-radio>
-					</el-radio-group>
-				</el-form-item>
-				<el-form-item label="年龄">
-					<el-input-number v-model="editForm.age" :min="0" :max="200"></el-input-number>
-				</el-form-item>
-				<el-form-item label="生日">
-					<el-date-picker type="date" placeholder="选择日期" v-model="editForm.birth"></el-date-picker>
-				</el-form-item>
-				<el-form-item label="地址">
-					<el-input type="textarea" v-model="editForm.addr"></el-input>
-				</el-form-item>
-			</el-form>
-			<div slot="footer" class="dialog-footer">
-				<el-button @click.native="editFormVisible = false">取消</el-button>
-				<el-button type="primary" @click.native="editSubmit" :loading="editLoading">提交</el-button>
-			</div>
-		</el-dialog>
+        <!--新增界面-->
+        <el-dialog title="新增" v-model="formVisible" :close-on-click-modal="false">
+            <el-form :model="form" label-width="80px" :rules="formRules" ref="form">
+                <el-form-item label="名称" prop="name">
+                    <el-input v-model="form.name" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="英文名" prop="englishName">
+                    <el-input v-model="form.englishName" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="logo" prop="logo">
+                    <el-upload
+                            class="upload-demo"
+                            action="http://127.0.0.1:9527/services/common/upload"
+                            :on-preview="handlePreview"
+                            :on-remove="handleRemove"
+                            :on-success="handSuccess"
+                            :file-list="fileList2"
+                            list-type="picture">
+                        <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                </el-form-item>
+                <el-form-item label="sortIndex" prop="sortIndex">
+                    <el-input v-model="form.sortIndex" auto-complete="off"></el-input>
+                </el-form-item>
 
-		<!--新增界面-->
-		<el-dialog title="新增" v-model="addFormVisible" :close-on-click-modal="false">
-			<el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
-				<el-form-item label="名称" prop="name">
-					<el-input v-model="addForm.name" auto-complete="off"></el-input>
-				</el-form-item>
-				<el-form-item label="英文名" prop="name">
-					<el-input v-model="addForm.englishName" auto-complete="off"></el-input>
-				</el-form-item>
-
-				<el-form-item label="产品类型">
-                    <el-select v-model="addForm.productType" placeholder="请选择">
-                        <el-option style="height:50px;" v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                    </el-select>
-				</el-form-item>
-				<el-form-item label="描述">
-					<el-input type="textarea" v-model="addForm.description"></el-input>
-				</el-form-item>
-			</el-form>
-			<div slot="footer" class="dialog-footer">
-				<el-button @click.native="addFormVisible = false">取消</el-button>
-				<el-button type="primary" @click.native="addSubmit" :loading="addLoading">提交</el-button>
-			</div>
-		</el-dialog>
-	</section>
+                <el-form-item label="商品类型" prop="productTypeId">
+                    <!--<el-input v-model="form.productTypeId" auto-complete="off"></el-input>-->
+                    <el-cascader
+                            placeholder="试试搜索：指南"
+                            :options="options"
+                            :props="BrandDefaultProps"
+                            @change="brandChange"
+                            change-on-select
+                    ></el-cascader>
+                </el-form-item>
+                <el-form-item label="描述">
+                    <el-input type="textarea" v-model="form.description"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click.native="formVisible = false">取消</el-button>
+                <el-button type="primary" @click.native="addSubmit" :loading="addLoading">提交</el-button>
+            </div>
+        </el-dialog>
+    </section>
 </template>
 
 <script>
-	import util from '../../common/js/util'
-	export default {
-		data() { //数据
-			return {
-				filters: {
-                    keyword: ''
-				},
-				brands: [],
-				total: 0,
-				page: 1,
-				listLoading: false,
-				sels: [],//列表选中列
+    import util from '../../common/js/util'
 
-				editFormVisible: false,//编辑界面是否显示
-				editLoading: false,
-				editFormRules: {
-					name: [
-						{ required: true, message: '请输入姓名', trigger: 'blur' }
-					]
-				},
-				//编辑界面数据
-				editForm: {
-					id: 0,
-					name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''
-				},
-
-				addFormVisible: false,//新增界面是否显示
-				addLoading: false,
-				addFormRules: {
-					name: [
-						{ required: true, message: '请输入姓名', trigger: 'blur' }
-					]
-				},
-				//新增界面数据
-				addForm: {
-					name: '',
-                    englishName: '',
-                    productType:'',
-                    description: ''
-				},
+    export default {
+        data() { //数据
+            return {
                 options: [],
-                productType: ''
-			}
-		},
-		methods: { //方法
-            created(){
-                //如果没有这句代码，select中初始化会是空白的，默认选中就无法实现
-                this.productType = this.couponList[0].name;
-
+                fileList2: [],
+                filters: {
+                    keyword: ''
+                },
+                brands: [],
+                total: 0,
+                page: 1,
+                listLoading: false,
+                sels: [],//列表选中列
+                formVisible: false,//新增界面是否显示
+                addLoading: false,
+                formRules: {
+                    name: [
+                        {required: true, message: '请输入姓名', trigger: 'blur'}
+                    ]
+                },
+                //新增界面数据
+                form: {
+                    name: '',
+                    englishName: '',
+                    productTypeId: '',
+                    description: '',
+                    sortIndex: '',
+                    logo: ''
+                },
+                BrandDefaultProps: {
+                    children: 'children',
+                    label: 'name',
+                    value: "id"
+                }
+            }
+        },
+        methods: { //方法
+            /*级联选择器如何让form表单提交值商品类型*/
+            brandChange(value){
+               // console.debug(value);
+                this.form.productTypeId =value[value.length-1];
             },
-			//性别显示转换
-			formatSex: function (row, column) {
-				return row.sex == 1 ? '男' : row.sex == 0 ? '女' : '未知';
-			},
-			handleCurrentChange(val) {
-				this.page = val;
-				this.getBrands();
-			},
-			//获取用户列表
-            getBrands() {
-				let para = {
-					page: this.page,
-					keyword: this.filters.keyword
-				};
-				this.listLoading = true;
+            removeArr(list) {
+                for (var i = 0; i < list.length; i++) {
+                    var item = list[i];
+                    if (item['children'].length > 0) {
+                        this.removeArr(item.children)
+                    } else {
+                        delete item.children;
+                    }
 
-				this.$http.post("/product/brand/json",para)
+                }
+            },
+            /*文件图片上传 -文件列表移除文件时的钩子*/
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+                let filePath = file.response ? file.response.resultObj : this.$filePathImg;
+                //想办法获取图片的路径
+                //console.debug(this.fileList2.length);
+                //var filePath = this.fileList2[0].url;
+                //console.debug();
+                this.form.logo = '';
+                this.$http.delete("/common/filePath?filePath=" + filePath)
+                    .then(res => {
+                        console.debug(res)
+                        if (res.data.success) {
+                            this.$message({
+                                message: "删除成功",
+                                type: "success"
+                            });
+                        } else {
+                            this.$message({
+                                message: "删除失败",
+                                type: "error"
+                            });
+                        }
+                    })
+            },
+            /*文件图片上传 -成功时的钩子函数*/
+            handSuccess(response, file, fileList) {
+                // console.debug(response,file,fileList);
+                this.form.logo = file.response.resultObj;
+            },
+            /*点击文件列表中已上传的文件时的钩子*/
+            handlePreview(file) {
+                console.log("handlePreview:" + file);
+            },
+
+            handleCurrentChange(val) {
+                this.page = val;
+                this.getBrands();
+            },
+            //获取用户列表
+            getBrands() {
+                let para = {
+                    page: this.page,
+                    keyword: this.filters.keyword
+                };
+                this.listLoading = true;
+
+                this.$http.post("/product/brand/json", para)
                     .then((res) => {
-                        console.log(this);
+                        //console.log(this);
                         this.total = res.data.total;
                         this.brands = res.data.rows;
                         this.listLoading = false;
                     });
-			},
+            },
 
             //获取商品类型
-            getPruductType(){
+            getPruductType() {
                 this.$http.get("/product/productType/treeData")
                     .then(res => {
-                        console.log(this);
-                        this.options = res.data;
+                        // console.log(this);
+                        let arr = res.data;
+                       this.removeArr(arr);
+                        this.options = arr;
+                        console.debug(res.data.length);
                     });
             },
-			//删除
-			handleDel: function (index, row) {
-				this.$confirm('确认删除该记录吗?', '提示', {
-					type: 'warning'
-				}).then(() => {
-					this.listLoading = true;
-					//NProgress.start();
-					let para = { id: row.id };
-					removeUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getBrands();
-					});
-				}).catch(() => {
+            //删除
+            handleDel: function (index, row) {
+                this.$confirm('确认删除该记录吗?', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    this.listLoading = true;
+                    //NProgress.start();
+                    //let para = { id: row.id };
+                    this.$http.delete("/product/brand/" + row.id).then((res) => {
+                        this.listLoading = false;
+                        //NProgress.done();
+                        this.$message({
+                            message: '删除成功',
+                            type: 'success'
+                        });
+                        this.getBrands();
+                    });
+                }).catch(() => {
 
-				});
-			},
-			//显示编辑界面
-			handleEdit: function (index, row) {
-				this.editFormVisible = true;
-				this.editForm = Object.assign({}, row);
-			},
-			//显示新增界面
-			handleAdd: function () {
-				this.addFormVisible = true;
-				this.addForm = {
-					name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''
-				};
-			},
-			//编辑
-			editSubmit: function () {
-				this.$refs.editForm.validate((valid) => {
-					if (valid) {
-						this.$confirm('确认提交吗？', '提示', {}).then(() => {
-							this.editLoading = true;
-							//NProgress.start();
-							let para = Object.assign({}, this.editForm);
-							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-							editUser(para).then((res) => {
-								this.editLoading = false;
-								//NProgress.done();
-								this.$message({
-									message: '提交成功',
-									type: 'success'
-								});
-								this.$refs['editForm'].resetFields();
-								this.editFormVisible = false;
-								this.getBrands();
-							});
-						});
-					}
-				});
-			},
-			//新增
-			addSubmit: function () {
-				this.$refs.addForm.validate((valid) => {
-					if (valid) {
-						this.$confirm('确认提交吗？', '提示', {}).then(() => {
-							this.addLoading = true;
-							//NProgress.start();
-							let para = Object.assign({}, this.addForm);
-							//para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-							addUser(para).then((res) => {
-								this.addLoading = false;
-								//NProgress.done();
-								this.$message({
-									message: '提交成功',
-									type: 'success'
-								});
-								this.$refs['addForm'].resetFields();
-								this.addFormVisible = false;
-								this.getBrands();
-							});
-						});
-					}
-				});
-			},
-			selsChange: function (sels) {
-				this.sels = sels;
-			},
-			//批量删除
-			batchRemove: function () {
-				var ids = this.sels.map(item => item.id).toString();
-				this.$confirm('确认删除选中记录吗？', '提示', {
-					type: 'warning'
-				}).then(() => {
-					this.listLoading = true;
-					//NProgress.start();
-					let para = { ids: ids };
-					batchRemoveUser(para).then((res) => {
-						this.listLoading = false;
-						//NProgress.done();
-						this.$message({
-							message: '删除成功',
-							type: 'success'
-						});
-						this.getBrands();
-					});
-				}).catch(() => {
+                });
+            },
+            //显示编辑界面
+            handleEdit: function (index, row) {
+                this.formVisible = true;
+                //回显
+                this.form = Object.assign({}, row);
+                this.fileList2.splice(0, this.fileList2.length);//清空数组
+                console.debug(this.fileList2.length);
+                this.$filePathImg = row.logo;
+                if (row.logo == '') {
+                    return;
+                }
+                this.fileList2.push({"url": "http://192.168.43.138" + row.logo})
+            },
+            //显示新增界面
+            handleAdd: function () {
+                this.formVisible = true;
+                this.fileList2.splice(0, this.fileList2.length);
+                this.form = {
+                    name: '',
+                    englishName: '',
+                    productTypeId: -1,
+                    description: '',
+                    sortIndex: '',
+                    logo: ''
+                };
+            },
 
-				});
-			}
-		}, // $(function()) 加载完毕后执行
-		mounted() {
-			this.getBrands();
-			this.getPruductType();
-		}
-	}
+            //新增
+            addSubmit: function () {
+                this.$refs.form.validate((valid) => {
+                    if (valid) {
+                        this.$confirm('确认提交吗？', '提示', {}).then(() => {
+                            this.addLoading = true;
+                            //NProgress.start();
+                            let para = Object.assign({}, this.form);
+                            console.debug(para);
+                            //para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
+                            this.$http.post("/product/brand/save", para).then((res) => {
+                                this.addLoading = false;
+                                //NProgress.done();
+                                this.$message({
+                                    message: '提交成功',
+                                    type: 'success'
+                                });
+                                this.$refs['form'].resetFields();
+                                this.formVisible = false;
+                                this.getBrands();
+                            });
+                        });
+                    }
+                });
+            },
+            selsChange: function (sels) {
+                this.sels = sels;
+            },
+            //批量删除
+            batchRemove: function () {
+                var ids = this.sels.map(item => item.id).toString();
+                this.$confirm('确认删除选中记录吗？', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    this.listLoading = true;
+                    //NProgress.start();
+                    let para = {ids: ids};
+                    this.$http.delete("/product/brand/ids/" + ids).then((res) => {
+                        this.listLoading = false;
+                        //NProgress.done();
+                        this.$message({
+                            message: '删除成功',
+                            type: 'success'
+                        });
+                        this.getBrands();
+                    });
+                }).catch(() => {
+
+                });
+            }
+        }, // $(function()) 加载完毕后执行
+        mounted() {
+            this.getBrands();
+            this.getPruductType();
+        }
+    }
 
 </script>
 
